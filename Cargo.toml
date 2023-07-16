@@ -1,0 +1,25 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package]
+name = "shadow-deploy"
+version = "0.1.0"
+edition = "2021"
+authors = ["Leander Paul"]
+description = "Handles the deployment of shadow applications in AWS"
+repository = "https://github.com/leanderpaul/shadow-deploy"
+
+[dependencies]
+aws-config = "0.55.3"
+aws-sdk-secretsmanager = "0.28.0"
+aws-sdk-sqs = "0.28.0"
+chrono = "0.4.26"
+serde = "1.0.171"
+serde_derive = "1.0.171"
+serde_json = "1.0.103"
+serde_yaml = "0.9.22"
+tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
