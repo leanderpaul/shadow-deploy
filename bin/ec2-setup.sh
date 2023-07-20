@@ -75,18 +75,35 @@ aws s3api get-object --bucket $BUCKET --key scripts/shadow-deploy shadow-deploy
 sudo mv shadow-deploy /usr/bin/shadow-deploy
 sudo chmod 711 /usr/bin/shadow-deploy
 cat > shadow-deploy.conf <<EOF
-cwd: /home/ubuntu
 queue_name: $QUEUE_URL
-commands:
-  - docker login $DOCKER_REGISTRY -u $DOCKER_USERNAME -p {{secrets.$SECRET_ID.DOCKER_PASSWORD}}
-  - docker pull $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE:{{message}}
-  - docker container rename webapp webapp-old || true
-  - docker stop webapp-old || true
-  - "docker run -d --name webapp -p 8080:8080 \
-      -e DB={{secrets.$SECRET_ID.DB}} \
-      $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE:{{message}}"
-  - docker container rm webapp-old || true
+events:
+  - name: echo
+    description: Echoes the message
+    commands:
+      - echo {{event.message}}
 
+  - name: init-deployment
+    commands:
+      - docker login $DOCKER_REGISTRY -u $DOCKER_USERNAME -p {{secrets.$SECRET_ID.DOCKER_PASSWORD}}
+      - docker pull $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE:{{event.image.tag}}
+      - "docker run -d --name webapp -p 8080:8080 \
+          -e DB={{secrets.$SECRET_ID.DB}} \
+          $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE:{{message}}"
+
+  - name: restart-deployment
+    commands:
+      - docker restart webapp
+
+  - name: update-deployment
+    commands:
+      - docker login $DOCKER_REGISTRY -u $DOCKER_USERNAME -p {{secrets.$SECRET_ID.DOCKER_PASSWORD}}
+      - docker pull $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE@{{event.image.tag}}
+      - docker container rename webapp webapp-old
+      - docker stop webapp-old
+      - "docker run -d --name webapp -p 8080:8080 \
+          -e DB={{secrets.$SECRET_ID.DB}} \
+          $DOCKER_REGISTRY/$DOCKER_USERNAME/$DOCKER_IMAGE:{{message}}"
+      - docker container rm webapp-old
 EOF
 sudo mv shadow-deploy.conf /etc/shadow-deploy.conf
 

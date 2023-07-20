@@ -1,1 +1,7 @@
+unstable_features = true
+chain_width = 100
+group_imports = "StdExternalCrate"
+imports_granularity = "Item"
 max_width = 140
+struct_lit_width = 50
+tab_spaces = 2

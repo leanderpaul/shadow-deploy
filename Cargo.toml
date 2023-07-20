@@ -9,10 +9,12 @@ description = "Handles the deployment of shadow applications in AWS"
 repository = "https://github.com/leanderpaul/shadow-deploy"
 
 [dependencies]
+async_once = "0.2.6"
 aws-config = "0.55.3"
 aws-sdk-secretsmanager = "0.28.0"
 aws-sdk-sqs = "0.28.0"
 chrono = "0.4.26"
+lazy_static = "1.4.0"
 serde = "1.0.171"
 serde_derive = "1.0.171"
 serde_json = "1.0.103"
